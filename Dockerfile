@@ -5,7 +5,7 @@ FROM ubuntu:22.04
 LABEL maintainer="gerald.mull@gmail.com"
 
 # Argument for Software versions
-ARG GOLANG_VERSION=1.22.3
+ARG GOLANG_VERSION=1.22.5
 ARG DOTNET_SDK_VERSION=6.0
 ARG PYTHON_VERSION=3.10
 ARG TERRAFORM_VERSION=1.3.0
