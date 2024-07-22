@@ -16,29 +16,32 @@ jobs:
       - name: Set up Docker
         uses: actions/setup-docker@v2
 
+      - name: Log in to Docker Hub
+        run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+
       - name: Build Docker image
-        run: |
-          docker build -t my-app:latest .
+        run: docker build -t gmullblack2/dev-env:latest .
 
       - name: Install Trivy
-        run: |
-          brew install aquasecurity/trivy/trivy
+        run: brew install aquasecurity/trivy/trivy
 
       - name: Scan Docker image for vulnerabilities
         id: trivy-scan
-        run: |
-          trivy image --format json -o trivy-report.json my-app:latest
+        run: trivy image --format json -o trivy-report.json gmullblack2/dev-env:latest
+
+      - name: Push Docker image to registry
+        run: docker push gmullblack2/dev-env:latest
 
       - name: Send email with scan report
         env:
           MAILGUN_API_KEY: ${{ secrets.MAILGUN_API_KEY }}
           MAILGUN_DOMAIN: ${{ secrets.MAILGUN_DOMAIN }}
-          MAILGUN_RECIPIENT: ${{ secrets.MAILGUN_RECIPIENT }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
         run: |
           curl -s --user "api:${MAILGUN_API_KEY}" \
           https://api.mailgun.net/v3/${MAILGUN_DOMAIN}/messages \
-          -F from='no-reply@gtechcumulas.org' \
-          -F to=${MAILGUN_RECIPIENT} \
+          -F from='sender@example.com' \
+          -F to=${EMAIL_TO} \
           -F subject='Docker Image Scan Report' \
           -F text='Please find the attached scan report for the Docker image.' \
           -F attachment=@trivy-report.json
